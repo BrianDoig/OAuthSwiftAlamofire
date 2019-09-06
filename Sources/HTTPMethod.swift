@@ -12,16 +12,16 @@ import OAuthSwift
 
 public extension Alamofire.HTTPMethod {
 
-    public var oauth: OAuthSwiftHTTPRequest.Method {
+    var oauth: OAuthSwiftHTTPRequest.Method {
         return OAuthSwiftHTTPRequest.Method(rawValue: self.rawValue)!
     }
 
 }
 
 public extension OAuthSwiftHTTPRequest.Method {
-    
-    public var alamofire: Alamofire.HTTPMethod {
-        return Alamofire.HTTPMethod(rawValue: self.rawValue)!
+
+    var alamofire: Alamofire.HTTPMethod {
+        return Alamofire.HTTPMethod(rawValue: self.rawValue)
     }
 
 }

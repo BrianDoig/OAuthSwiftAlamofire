@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import OAuthSwiftAlamofire
+@testable import OAuthSwiftAlamofire
 import OAuthSwift
 import Alamofire
 
@@ -42,14 +42,14 @@ class OAuthSwiftAlamofireTests: XCTestCase {
         let expectation = self.expectation(description: "auth should succeed")
         
         oauth.authorize(
-            withCallbackURL: URL(string:callbackURL)!,
-            success: { credential, response, parameters in
+        withCallbackURL: URL(string:callbackURL)!) { result in
+            switch result {
+            case .success:
                 expectation.fulfill()
-            },
-            failure:  { e in
-                XCTFail("The failure handler should not be called. \(e)")
+            case .failure (let error):
+                XCTFail("The failure handler should not be called. \(error)")
             }
-        )
+        }
         
         waitForExpectations(timeout: 20, handler: nil)
         
@@ -65,13 +65,10 @@ class OAuthSwiftAlamofireTests: XCTestCase {
         }
         
         let expectation = self.expectation(description: "auth should succeed")
-        let sessionManager = SessionManager.default
-        let adapter = oauth.requestAdapter
-        //adapter.paramsLocation = .requestURIQuery
-        sessionManager.adapter = adapter
-        
+        let interceptor = oauth.requestInterceptor
+        let sessionManager = Session(interceptor: interceptor)
         let param = "method=foo&bar=baz"
-       
+        // TODO http://oauthbin.com no more exist, test could not be done
         sessionManager.request("http://oauthbin.com/v1/echo?\(param)", method: .get).validate().responseString { response in
             switch response.result {
             case .success(let value):
@@ -82,6 +79,35 @@ class OAuthSwiftAlamofireTests: XCTestCase {
             }
         }
         waitForExpectations(timeout: 20, handler: nil)
+    }
+    
+    // Note: oauthbin.com doesn't seem to exist anymore (domain name expire) and couldn't find another easily usable test server
+    // This test case needs to be updated if and when oauthbin.com comes back.
+    func testMultipleRequests() {
+        let exp1 = self.expectation(description: "auth should retry 1st request")
+        let exp2 = self.expectation(description: "auth should retry 2nd request")
+        
+        let oauth2 = OAuth2Swift(
+            consumerKey: "tbd",
+            consumerSecret: "tbd",
+            authorizeUrl: "tbd",
+            accessTokenUrl: "tbd",
+            responseType: "code")
+        
+        let interceptor = oauth2.requestInterceptor
+        let session = Session(interceptor: interceptor)
+        
+        session.request("tbd", method: .get).validate().response { response in
+            XCTAssert(response.response?.statusCode == 200, "Failed request 1 auth")
+            exp1.fulfill()
+        }
+        
+        session.request("tbd").validate().response { response in
+            XCTAssert(response.response?.statusCode == 200, "Failed request 2 auth")
+            exp2.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5.0, handler: nil)
     }
 
 }
@@ -106,7 +132,6 @@ class TestOAuthSwiftURLHandler: NSObject, OAuthSwiftURLHandlerType {
         self.version = version
     }
     @objc func handle(_ url: URL) {
-        
         switch version {
         case .oauth1:
             handleV1(url)
