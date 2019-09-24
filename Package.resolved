@@ -12,11 +12,11 @@
       },
       {
         "package": "OAuthSwift",
-        "repositoryURL": "https://github.com/OAuthSwift/OAuthSwift.git",
+        "repositoryURL": "https://github.com/BrianDoig/OAuthSwift.git",
         "state": {
-          "branch": "2.1.0",
-          "revision": "4aae467bb6aa3c8437b4aba31578a0087bbf6738",
-          "version": null
+          "branch": null,
+          "revision": "3878c057c3125d8e502d7c6a8cfcb9db8897eade",
+          "version": "2.1.0-pre_alpha.1"
         }
       }
     ]
